@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QueueKitchen · Amazon SQS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>QueueKitchen</h1>
+    <p></p>
+  </div>
+  <span id="conn" class="pill">connecting…</span>
+</header>
+
+<section class="demo">
+  <b>Quick demo</b>
+  <button id="pHappy">Happy path</button>
+  <button id="pFail">Make the chef fail</button>
+  <button id="pRescue">Rescue burnt orders</button>
+</section>
+<p id="caption" class="caption">Queue is empty. Send an order or run a quick demo.</p>
+
+<div class="grid">
+  <div class="col">
+    <section class="card">
+      <h2>Automatic: Lambda consumes the queue</h2>
+      <div class="pipe">
+        <div class="node"><b>Customer</b><small>sends a message</small></div>
+        <i class="arr">→</i>
+        <div class="node" id="nQ"><b id="waiting">0</b><span>SQS queue</span><small>waiting</small></div>
+        <i class="arr">→</i>
+        <div class="node" id="nL"><b id="cooking">0</b><span>Lambda chef</span><small>in flight</small></div>
+        <i class="arr">→</i>
+        <div class="node ok" id="nS"><b id="served">0</b><span>Served</span><small>message deleted</small></div>
+      </div>
+      <p class="branch">After 3 failed receives, SQS moves the message ↓</p>
+      <div class="pipe">
+        <div class="node bad" id="nD"><b id="burnt">0</b><span>Burnt bin</span><small>dead-letter queue</small></div>
+        <button id="redrive">Redrive to main queue</button>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <select id="item"><option>Pizza</option><option>Burger</option><option>Pasta</option><option>Dosa</option><option>Biryani</option></select>
+          <button id="order" class="primary">Send order to queue</button>
+        </div>
+        <label class="slider">Chef failure rate: <b id="rateVal">0</b>%
+          <input type="range" id="rate" min="0" max="100" value="0">
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Manual: you are the consumer</h2>
+      <p class="hint">These are the same steps Lambda performs above: receive, hide for the visibility timeout, then delete. Here you do them by hand on a separate queue.</p>
+      <div class="pipe small">
+        <div class="node"><b id="pgV">0</b><small>visible</small></div>
+        <div class="node"><b id="pgI">0</b><small>in flight</small></div>
+        <div class="node"><b id="pgD">0</b><small>delayed</small></div>
+      </div>
+      <div class="row">
+        <input id="txt" placeholder="Message text" value="hello sqs">
+        <input id="delay" type="number" min="0" max="30" value="0" title="Delay in seconds">
+        <button id="send" class="primary">Send</button>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="lp"> Long polling (waits up to 5 s)</label>
+        <button id="recv" class="primary">Receive</button>
+      </div>
+      <div id="held" class="held" hidden></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <h2>Orders</h2>
+      <div id="orders"><p class="hint">No orders yet.</p></div>
+    </section>
+    <section class="card">
+      <h2>What SQS is doing</h2>
+      <div id="log" class="log"></div>
+    </section>
+    <section class="card">
+      <h2>Free-tier meter</h2>
+      <div id="costNow"></div>
+      <label class="slider">If you got <b id="perDayV">1,000</b> orders a day
+        <input type="range" id="perDay" min="10" max="50000" step="10" value="1000">
+      </label>
+      <div id="costOut"></div>
+      <p class="hint">Assumes 3 SQS requests (send, receive, delete) and 1 Lambda invocation per order. Free tier: 1M of each per month.</p>
+    </section>
+  </div>
+</div>
+<h1 >24BDS1027 Aniket K Krishnan</h1>
+<footer>Service: Amazon SQS · Consumer: AWS Lambda · Status store: DynamoDB</footer>
+<script src="script.js"></script>
+</body>
+</html>
